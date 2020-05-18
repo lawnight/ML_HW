@@ -61,7 +61,7 @@ def aggrate(month_data,hours = 9):
     # print(len(x_validation))
     # print(len(y_validation))
 
-    return x_train_set,y_train_set,x_validation,y_validation,std_x,mean_x
+    return x,y,x_validation,y_validation,std_x,mean_x
 
 
 
@@ -128,10 +128,10 @@ def predict_loss(x,y,f_count,ff_count):
     print('predict loss',loss)
 
 #%%
-x_train_set,y_train_set,x_validation,y_validation = aggrate(month_data,9)
-r = train(x_train_set,y_train_set,9,18,10000,0.000005)
-print('train:',r[-1])
-predict_loss(x_validation,y_validation,9,18)
+# x_train_set,y_train_set,x_validation,y_validation = aggrate(month_data,9)
+# r = train(x_train_set,y_train_set,9,18,10000,0.000005)
+# print('train:',r[-1])
+# predict_loss(x_validation,y_validation,9,18)
 # 前5小时
 # x_train_set,y_train_set,x_validation,y_validation = aggrate(month_data,5)
 # r = train(x_train_set,y_train_set,5,18,1000,100)
@@ -146,7 +146,7 @@ predict_loss(x_validation,y_validation,9,18)
 # 尝试超越baseline
 x_train_set,y_train_set,x_validation,y_validation,std_x ,mean_x= aggrate(month_data,9)
 i=6
-print('first',i)
+print('first hours',i)
 r = train(x_train_set,y_train_set,i,18,5000,100)
 print('train:',r[-1])
 predict_loss(x_validation,y_validation,i,18)
