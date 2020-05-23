@@ -72,6 +72,8 @@ def aggrate(month_data,hours = 9):
 #藉由調整 learning rate、iter_time (iteration 次數)、取用 features 的多寡(取幾個小時，取哪些特徵欄位)，甚至是不同的 model 來超越 baseline。
 #因為常數項的存在，所以 dimension (dim) 需要多加一欄
 #%%
+import torch
+import torch.nn as nn
 def train(x,y,f_count,ff_count,iter_time,learning_rate):
     """
     x:dim 18*9+1
@@ -89,17 +91,23 @@ def train(x,y,f_count,ff_count,iter_time,learning_rate):
 
     x = np.concatenate((np.ones([size, 1]), x), axis = 1).astype(float)
     
-    adagrad = np.zeros([dim, 1])
-    eps = 0.0000000001
-    losses = []
-    for t in range(iter_time):        
-        loss = np.sqrt(np.sum(np.power(np.dot(x, w) - y, 2))/size)#rmse
-        losses.append(loss)
-        if(t%100==0):
-            print(str(t) + ":" + str(loss))
-        gradient = 2 * np.dot(x.transpose(), np.dot(x, w) - y) #dim*1
-        adagrad += gradient ** 2
-        w = w - learning_rate * gradient / np.sqrt(adagrad + eps) 
+    # adagrad = np.zeros([dim, 1])
+    # eps = 0.0000000001
+    # losses = []
+    # for t in range(iter_time):        
+    #     loss = np.sqrt(np.sum(np.power(np.dot(x, w) - y, 2))/size)#rmse
+    #     losses.append(loss)
+    #     if(t%100==0):
+    #         print(str(t) + ":" + str(loss))
+    #     gradient = 2 * np.dot(x.transpose(), np.dot(x, w) - y) #dim*1
+    #     adagrad += gradient ** 2
+    #     w = w - learning_rate * gradient / np.sqrt(adagrad + eps) 
+
+    modle = nn.Linear(dim,1)
+    tensor = torch.from_numpy(x) 
+    for t in range(iter_time):      
+        modle(tensor)
+    modle.weight
     np.save('weight.npy', w)
     return losses
 
