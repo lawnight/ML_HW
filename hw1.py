@@ -99,7 +99,9 @@ def train(x,y,f_count,ff_count,iter_time,learning_rate):
             print(str(t) + ":" + str(loss))
         gradient = 2 * np.dot(x.transpose(), np.dot(x, w) - y) #dim*1
         adagrad += gradient ** 2
-        w = w - learning_rate * gradient / np.sqrt(adagrad + eps) 
+        w = w - learning_rate * gradient / np.sqrt(adagrad + eps)
+        print('gradient',gradient)
+        print(w) 
     np.save('weight.npy', w)
     return losses
 
@@ -147,7 +149,7 @@ def predict_loss(x,y,f_count,ff_count):
 x_train_set,y_train_set,x_validation,y_validation,std_x ,mean_x= aggrate(month_data,9)
 i=6
 print('first hours',i)
-r = train(x_train_set,y_train_set,i,18,5000,100)
+r = train(x_train_set,y_train_set,i,18,1,100)
 print('train:',r[-1])
 predict_loss(x_validation,y_validation,i,18)
 

@@ -72,8 +72,6 @@ def aggrate(month_data,hours = 9):
 #藉由調整 learning rate、iter_time (iteration 次數)、取用 features 的多寡(取幾個小時，取哪些特徵欄位)，甚至是不同的 model 來超越 baseline。
 #因為常數項的存在，所以 dimension (dim) 需要多加一欄
 #%%
-import torch
-import torch.nn as nn
 def train(x,y,f_count,ff_count,iter_time,learning_rate):
     """
     x:dim 18*9+1
@@ -89,41 +87,36 @@ def train(x,y,f_count,ff_count,iter_time,learning_rate):
     if ff_count==1:
         x = x[:,10::18]  
 
-    x = np.concatenate((np.ones([size, 1]), x), axis = 1).astype(float)
+    x = np.concatenate((np.ones([size, 1]), x), axis = 1).astype(np.float)
+
+
+   
+    x = torch.from_numpy(x)
+    y = torch.from_numpy(y)
+    linear_module = nn.Linear(x.shape[1],1,bias=False)
     
-    # adagrad = np.zeros([dim, 1])
-    # eps = 0.0000000001
-    # losses = []
-    # for t in range(iter_time):        
-    #     loss = np.sqrt(np.sum(np.power(np.dot(x, w) - y, 2))/size)#rmse
-    #     losses.append(loss)
-    #     if(t%100==0):
-    #         print(str(t) + ":" + str(loss))
-    #     gradient = 2 * np.dot(x.transpose(), np.dot(x, w) - y) #dim*1
-    #     adagrad += gradient ** 2
-    #     w = w - learning_rate * gradient / np.sqrt(adagrad + eps) 
+    p = next(linear_module.parameters())
+    p.data = torch.zeros([p.shape[0],p.shape[1]])
+    linear_module = linear_module.double()
+    loss_f = nn.MSELoss()
+    optim = torch.optim.Adagrad(linear_module.parameters(),lr=learning_rate,lr_decay=1)
 
-    modle = nn.Linear(dim,1)
-    tensor = torch.from_numpy(x) 
-    for t in range(iter_time):      
-        modle(tensor)
-    modle.weight
-    np.save('weight.npy', w)
-    return losses
-
-# iters = [1000,1500,2000,2500]
-## 作业1题：画图
-# learning_rate = [1,0.5,0.2,0.1]
-# tables ={}
-# for iter_num in learning_rate:
-#     losses = train(x,25,iter_num)
-#     tables[iter_num] = losses 
-    
-# df = pd.DataFrame(tables)
-# df.plot()
-
-
-
+    print(next(linear_module.parameters()))
+    for t in range(iter_time):        
+        yhat = linear_module(x)
+        loss = torch.sqrt(loss_f(yhat,y))
+        if t % 100 == 0:
+            print(str(t) + ":" + str(loss.item()))
+        optim.zero_grad()
+        loss.backward()
+        
+        print('grad',linear_module.weight.grad)
+        optim.step()
+        print('w',linear_module.weight)
+        # if t % 20 == 0:
+        #     print('{},\t{:.2f},\t{}'.format(i, loss.item(), linear_module.weight.view(2).detach().numpy()))
+    #np.save('weight.npy', linear_module.parameters())
+    return loss
 def predict_loss(x,y,f_count,ff_count):
     w = np.load('weight.npy')   
     # 截取特征量
@@ -134,28 +127,11 @@ def predict_loss(x,y,f_count,ff_count):
     vali_y = np.dot(x,w)
     loss = np.sqrt(np.sum(np.power(vali_y - y, 2))/x.shape[0])#rmse
     print('predict loss',loss)
-
-#%%
-# x_train_set,y_train_set,x_validation,y_validation = aggrate(month_data,9)
-# r = train(x_train_set,y_train_set,9,18,10000,0.000005)
-# print('train:',r[-1])
-# predict_loss(x_validation,y_validation,9,18)
-# 前5小时
-# x_train_set,y_train_set,x_validation,y_validation = aggrate(month_data,5)
-# r = train(x_train_set,y_train_set,5,18,1000,100)
-# print('train:',r[-1])
-# predict_loss(x_validation,y_validation,5,18)
-
-#只取pm2.5
-# r = train(x_train_set,y_train_set,9,1,1000,100)
-# print('train:',r[-1])
-# predict_loss(x_validation,y_validation,9,1)
-#%%
 # 尝试超越baseline
 x_train_set,y_train_set,x_validation,y_validation,std_x ,mean_x= aggrate(month_data,9)
 i=6
-print('first',i)
-r = train(x_train_set,y_train_set,i,18,5000,100)
+print('first hours',i)
+r = train(x_train_set,y_train_set,i,18,1,100)
 print('train:',r[-1])
 predict_loss(x_validation,y_validation,i,18)
 
